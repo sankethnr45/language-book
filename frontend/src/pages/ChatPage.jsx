@@ -14,6 +14,7 @@ import {
   Window,
 } from "stream-chat-react";
 import { StreamChat } from "stream-chat";
+import { getOrCreateStreamClient } from "../lib/streamClient";
 import toast from "react-hot-toast";
 
 import ChatLoader from "../components/ChatLoader";
@@ -43,16 +44,7 @@ const ChatPage = () => {
       try {
         console.log("Initializing stream chat client...");
 
-        const client = StreamChat.getInstance(STREAM_API_KEY);
-
-        await client.connectUser(
-          {
-            id: authUser._id,
-            name: authUser.fullName,
-            image: authUser.profilePic,
-          },
-          tokenData.token
-        );
+        const client = await getOrCreateStreamClient(authUser, STREAM_API_KEY);
 
         //
         const channelId = [authUser._id, targetUserId].sort().join("-");
@@ -80,6 +72,39 @@ const ChatPage = () => {
     initChat();
   }, [tokenData, authUser, targetUserId]);
 
+  // Subscribe to new message events to show notifications
+  useEffect(() => {
+    if (!channel || !authUser) return;
+
+    const handleNewMessage = (event) => {
+      const message = event?.message;
+      const senderId = message?.user?.id || event?.user?.id;
+      if (!message || senderId === authUser._id) return; // ignore own messages
+
+      const senderName = message.user?.name || "New message";
+      const text = message.text || "You received a new message";
+
+      // In-app toast
+      toast.custom(
+        (t) => (
+          <div className="card bg-base-200 shadow-md p-3">
+            <div className="font-semibold">{senderName}</div>
+            <div className="text-sm opacity-80 line-clamp-2">{text}</div>
+          </div>
+        ),
+        { duration: 4000 }
+      );
+
+      // Explicitly avoid any browser/system notifications
+    };
+
+    channel.on("message.new", handleNewMessage);
+
+    return () => {
+      channel.off("message.new", handleNewMessage);
+    };
+  }, [channel, authUser]);
+
   const handleVideoCall = () => {
     if (channel) {
       const callUrl = `${window.location.origin}/call/${channel.id}`;
@@ -93,6 +118,11 @@ const ChatPage = () => {
   };
 
   if (loading || !chatClient || !channel) return <ChatLoader />;
+
+  // Mark channel as read when viewing
+  if (channel && chatClient) {
+    channel.markRead();
+  }
 
   return (
     <div className="h-[93vh]">

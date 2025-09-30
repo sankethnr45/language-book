@@ -82,6 +82,17 @@ export async function login(req, res) {
       expiresIn: "7d",
     });
 
+    // Ensure the user exists in Stream (in case signup happened before Stream was configured)
+    try {
+      await upsertStreamUser({
+        id: user._id.toString(),
+        name: user.fullName,
+        image: user.profilePic || "",
+      });
+    } catch (error) {
+      console.log("Error upserting Stream user on login:", error);
+    }
+
     res.cookie("jwt", token, {
       maxAge: 7 * 24 * 60 * 60 * 1000,
       httpOnly: true, // prevent XSS attacks,
