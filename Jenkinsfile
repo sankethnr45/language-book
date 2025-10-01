@@ -3,15 +3,15 @@ pipeline {
 
     environment {
         // --- IMPORTANT: REPLACE THESE PLACEHOLDERS ---
-        AWS_REGION = 'your-aws-region' // e.g., us-east-1
-        ECR_REGISTRY = 'your-aws-account-id.dkr.ecr.your-aws-region.amazonaws.com' // e.g., 123456789012.dkr.ecr.us-east-1.amazonaws.com
-        BACKEND_IMAGE_NAME = 'your-backend-ecr-repo-name'
-        FRONTEND_IMAGE_NAME = 'your-frontend-ecr-repo-name'
-        ECS_CLUSTER_NAME = 'your-ecs-cluster-name'
-        BACKEND_SERVICE_NAME = 'your-backend-ecs-service-name'
-        FRONTEND_SERVICE_NAME = 'your-frontend-ecs-service-name'
+        AWS_REGION = 'us-east-1' // e.g., us-east-1
+        ECR_REGISTRY = '426333731357.dkr.ecr.us-east-1.amazonaws.com' // e.g., 123456789012.dkr.ecr.us-east-1.amazonaws.com
+        BACKEND_IMAGE_NAME = 'languagebook-backend'
+        FRONTEND_IMAGE_NAME = 'languagebook-frontend'
+        ECS_CLUSTER_NAME = 'languagebook-cluster-real2'
+        BACKEND_SERVICE_NAME = 'languagebook-backend-task-service-2'
+        FRONTEND_SERVICE_NAME = 'languagebook-frontend-task-service-2'
         // This makes sure the AWS CLI can be used by Jenkins
-        AWS_CREDENTIALS = credentials('your-jenkins-aws-credentials-id')
+        AWS_CREDENTIALS = credentials('jenkins-aws-creds')
     }
 
     stages {
